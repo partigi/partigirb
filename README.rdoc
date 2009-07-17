@@ -1,7 +1,7 @@
 = partigirb
 
-Description goes here.
+Wrapper for the Partigi REST API.
 
 == Copyright
 
-Copyright (c) 2009 Alvaro Bautista Pino. See LICENSE for details.
+Copyright (c) 2009 Alvaro Bautista & Fernando Blat, released under MIT license

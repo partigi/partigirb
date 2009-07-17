@@ -6,9 +6,9 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "partigirb"
     gem.summary = %Q{TODO}
-    gem.email = "alvarobp@gmail.com"
+    gem.email = ["alvarobp@gmail.com", "ferblape@gmail.com"]
     gem.homepage = "http://github.com/alvarobp/partigirb"
-    gem.authors = ["Alvaro Bautista Pino"]
+    gem.authors = ["Alvaro Bautista", "Fernando Blat"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 
