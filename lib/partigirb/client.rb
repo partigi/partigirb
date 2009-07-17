@@ -96,7 +96,7 @@ module Partigirb
     def send_request(params)
       begin
         transport.request(
-          request.method,request.url,:headers=>headers,:params=>params
+          request.method, request.url, :headers=>headers, :params=>params
         )
       rescue => e
         puts e

@@ -59,7 +59,6 @@ module Partigirb
         dump_request(req) if debug
         res = http.request(req)
         dump_response(res) if debug
-        debugger
         res
       end
     end
