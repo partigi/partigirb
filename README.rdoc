@@ -1,0 +1,7 @@
+= partigirb
+
+Description goes here.
+
+== Copyright
+
+Copyright (c) 2009 Alvaro Bautista Pino. See LICENSE for details.
