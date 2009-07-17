@@ -2,6 +2,8 @@
 
 Wrapper for the Partigi REST API.
 
+Adapted from Hayes Davis grackle gem (http://github.com/hayesdavis/grackle/tree/master)
+
 == Copyright
 
 Copyright (c) 2009 Alvaro Bautista & Fernando Blat, released under MIT license

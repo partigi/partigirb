@@ -11,7 +11,7 @@ module Partigirb
     end
   end
   
-  class Request
+  class Transport
     
     attr_accessor :debug
   
@@ -30,7 +30,7 @@ module Partigirb
     # - :params - a hash of parameters to be sent with the request. If a File is a parameter value, \
     #             a multipart request will be sent. If a Time is included, .httpdate will be called on it.
     # - :headers - a hash of headers to send with the request
-    def perform(method, string_url, options={})
+    def request(method, string_url, options={})
       params = stringify_params(options[:params])
       if method == :get && params
         string_url << query_string(params)
@@ -59,7 +59,7 @@ module Partigirb
         dump_request(req) if debug
         res = http.request(req)
         dump_response(res) if debug
-        # Response.new(method,url.to_s,res.code.to_i,res.body)
+        debugger
         res
       end
     end
