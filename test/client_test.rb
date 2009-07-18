@@ -83,9 +83,15 @@ class ClientTest < Test::Unit::TestCase
     assert post_data.include?('rating=5')
   end
   
-  # TODO: Test for adding headers
-  should "add headers to the HTTP requests" do
+  should "add any headers to the HTTP requests" do
+    client = new_client(200, '', {:headers => {'Useless' => 'void', 'Fake' => 'header'}})
+    client.user.show.xml
     
+    assert_not_nil Net::HTTP.request['Useless']
+    assert_equal 'void', Net::HTTP.request['Useless']
+    assert_not_nil Net::HTTP.request['Fake']
+    assert_equal 'header', Net::HTTP.request['Fake']
   end
+  
   # TODO: Test for responses
 end
