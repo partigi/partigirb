@@ -7,6 +7,10 @@ $:.unshift File.dirname(__FILE__)
 
 require 'open-uri'
 require 'net/http'
+require 'base64'
+require 'digest'
+
+require 'partigirb/core_ext'
 
 require 'partigirb/transport'
 require 'partigirb/client'

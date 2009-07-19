@@ -35,8 +35,9 @@ module Partigirb
     VALID_FORMATS = [:atom,:xml,:json]
 
     PARTIGI_API_HOST = "www.partigi.com"
+    TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
     
-    attr_accessor :default_format, :headers, :api_version, :transport, :request, :api_host
+    attr_accessor :default_format, :headers, :api_version, :transport, :request, :api_host, :auth
     
     def initialize(options={})
       self.transport = Transport.new
@@ -44,12 +45,16 @@ module Partigirb
       self.api_version = options[:api_version] || Partigirb::CURRENT_API_VERSION
       self.headers = {"User-Agent"=>"Partigirb/#{Partigirb::VERSION}"}.merge!(options[:headers]||{})
       self.default_format = options[:default_format] || :xml
-      
+
       #self.handlers = {:json=>Handlers::JSONHandler.new,:xml=>Handlers::XMLHandler.new,:unknown=>Handlers::StringHandler.new}
       #self.handlers.merge!(options[:handlers]||{})
       
-      
-      # TODO: Set authentication here
+      # Authentication param should be a hash with keys:
+      # login (required)
+      # api_secret (required)
+      # nonce (optional, would be automatically generated if missing)
+      # timestamp (optional, current timestamp will be automatically used if missing)
+      self.auth = options[:auth]
     end
     
     def method_missing(name,*args)
@@ -95,6 +100,8 @@ module Partigirb
     
     def send_request(params)
       begin
+        set_authentication_headers
+        
         transport.request(
           request.method, request.url, :headers=>headers, :params=>params
         )
@@ -121,6 +128,42 @@ module Partigirb
     
     def format_invocation?(name)
       self.request.path? && VALID_FORMATS.include?(name)
+    end
+    
+    # Adds the proper WSSE headers if there are the right authentication parameters
+    def set_authentication_headers
+      unless self.auth.nil? || self.auth === Hash || self.auth.empty?
+        auths = self.auth.stringify_keys
+      
+        if auths.has_key?('login') &&  auths.has_key?('api_secret')
+          if !auths['timestamp'].nil?
+            timestamp = case auths['timestamp']
+            when Time
+              auths['timestamp'].strftime(TIMESTAMP_FORMAT)
+            when String
+              auths['timestamp']
+            end
+          else
+            timestamp = Time.now.strftime(TIMESTAMP_FORMAT) if timestamp.nil?
+          end
+        
+          nonce = auths['nonce'] || generate_nonce
+          password_digest = generate_password_digest(nonce, timestamp, auths['login'], auths['api_secret'])
+          headers.merge!({
+            'Authorization' => "WSSE realm=\"#{PARTIGI_API_HOST}\", profile=\"UsernameToken\"",
+            'X-WSSE' => "UsernameToken Username=\"#{auths['login']}\", PasswordDigest=\"#{password_digest}\", Nonce=\"#{nonce}\", Created=\"#{timestamp}\""
+          })
+        end
+      end
+    end
+    
+    def generate_nonce
+      o =  [('a'..'z'),('A'..'Z')].map{|i| i.to_a}.flatten
+      Digest::MD5.hexdigest((0..10).map{o[rand(o.length)]}.join)
+    end
+    
+    def generate_password_digest(nonce, timestamp, login, secret)
+      Base64.encode64(Digest::SHA1.hexdigest("#{nonce}#{timestamp}#{login}#{secret}")).chomp
     end
   end
 end
