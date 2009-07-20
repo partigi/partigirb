@@ -118,12 +118,7 @@ module Partigirb
     end
     
     def process_response_errors(format, res)
-      # FIXME: This is totally provisional, we should use a ResponseParser to parse errors for each format
-      case format
-      when :xml
-        res.body =~ /<error>Partigi::(.*)<\/error>/
-        puts "Error: #{$1}"
-      end
+      # TODO: This is totally useless, we should use a ResponseParser to parse errors for each format
     end
     
     def format_invocation?(name)
