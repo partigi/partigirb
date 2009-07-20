@@ -154,4 +154,26 @@ class ClientTest < Test::Unit::TestCase
   end
   
   # TODO: Test for responses
+  
+  # Copied from Grackle
+  should "clear the request path on clear" do
+    client = new_client(200,'[{"id":1,"text":"test 1"}]')
+    client.some.url.that.does.not.exist
+    assert_equal('/some/url/that/does/not/exist',client.send(:request).path,"An unexecuted path should be build up")
+    client.clear
+    assert_equal('',client.send(:request).path,"The path shoudl be cleared")
+  end
+  
+  should "use multipart encoding when using a file param" do
+    client = new_client(200,'[{"id":1,"text":"test 1"}]')
+    client.account.update_profile_image! :image=>File.new(__FILE__)    
+    assert_match(/multipart\/form-data/,Net::HTTP.request['Content-Type'])
+  end
+  
+  should "escape and encode time param" do
+    client = new_client(200,'[{"id":1,"text":"test 1"}]')
+    time = Time.now-60*60
+    client.statuses.public_timeline? :since=>time  
+    assert_equal("/api/v#{Partigirb::CURRENT_API_VERSION}/statuses/public_timeline.xml?since=#{CGI::escape(time.httpdate)}", Net::HTTP.request.path)
+  end
 end

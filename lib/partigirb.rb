@@ -9,6 +9,7 @@ require 'open-uri'
 require 'net/http'
 require 'base64'
 require 'digest'
+require 'mime/types'
 
 require 'partigirb/core_ext'
 
