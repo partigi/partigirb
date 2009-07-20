@@ -1,6 +1,6 @@
 = partigirb
 
-Wrapper for the Partigi REST API.
+Wrapper for the Partigi API.
 
 Adapted from Hayes Davis grackle gem (http://github.com/hayesdavis/grackle/tree/master)
 
