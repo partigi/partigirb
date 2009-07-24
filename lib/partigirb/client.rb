@@ -1,4 +1,22 @@
 module Partigirb
+  
+  class PartigiStruct < OpenStruct
+    attr_accessor :id 
+  end
+  
+  #Raised by methods which call the API if a non-200 response status is received 
+  class PartigiError < StandardError
+    attr_accessor :method, :request_uri, :status, :response_body, :response_object
+  
+    def initialize(method, request_uri, status, response_body, msg=nil)
+      self.method = method
+      self.request_uri = request_uri
+      self.status = status
+      self.response_body = response_body
+      super(msg||"#{self.method} #{self.request_uri} => #{self.status}: #{self.response_body}")
+    end
+  end
+  
   class Client
     class Request #:nodoc:
       attr_accessor :client, :path, :method, :api_version
@@ -37,17 +55,22 @@ module Partigirb
     PARTIGI_API_HOST = "www.partigi.com"
     TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
     
-    attr_accessor :default_format, :headers, :api_version, :transport, :request, :api_host, :auth
+    attr_accessor :default_format, :headers, :api_version, :transport, :request, :api_host, :auth, :handlers
     
     def initialize(options={})
       self.transport = Transport.new
       self.api_host = PARTIGI_API_HOST.clone
       self.api_version = options[:api_version] || Partigirb::CURRENT_API_VERSION
       self.headers = {"User-Agent"=>"Partigirb/#{Partigirb::VERSION}"}.merge!(options[:headers]||{})
-      self.default_format = options[:default_format] || :xml
-
-      #self.handlers = {:json=>Handlers::JSONHandler.new,:xml=>Handlers::XMLHandler.new,:unknown=>Handlers::StringHandler.new}
-      #self.handlers.merge!(options[:handlers]||{})
+      self.default_format = options[:default_format] || :atom
+      self.handlers = {
+        :json => Partigirb::Handlers::JSONHandler.new,
+        :xml => Partigirb::Handlers::XMLHandler.new,
+        :unknown => Partigirb::Handlers::StringHandler.new
+      }
+      self.handlers[:atom] = self.handlers[:xml]
+      
+      self.handlers.merge!(options[:handlers]||{})
       
       # Authentication param should be a hash with keys:
       # login (required)
@@ -111,18 +134,34 @@ module Partigirb
     end
     
     def process_response(format, res)
-      process_response_errors(format, res) if res.code != 200
+      fmt_handler = handler(format)        
+      begin
+        unless res.code == 200
+          handle_error_response(res, Partigi::Handlers::XMLHandler)
+        else
+          fmt_handler.decode_response(res.body)
+        end
+      rescue PartigiError => e
+        raise e
+      rescue => e
+        raise PartigiError.new(res.method,res.request_uri,res.status,res.body,"Unable to decode response: #{e}")
+      end
       
-      # TODO: Use ResponseParser here depending on format to return a Response object
-      res
     end
     
-    def process_response_errors(format, res)
-      # TODO: This is totally useless, we should use a ResponseParser to parse errors for each format
+    # TODO: Test for errors
+    def handle_error_response(res, handler)
+      err = PartigiError.new(res.method,res.request_uri,res.status,res.body)
+      err.response_object = handler.decode_response(err.response_body)
+      raise err        
     end
     
     def format_invocation?(name)
       self.request.path? && VALID_FORMATS.include?(name)
+    end
+    
+    def handler(format)
+      handlers[format] || handlers[:unknown]
     end
     
     # Adds the proper WSSE headers if there are the right authentication parameters

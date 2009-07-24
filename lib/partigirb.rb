@@ -9,9 +9,12 @@ require 'open-uri'
 require 'net/http'
 require 'base64'
 require 'digest'
+require 'rexml/document'
 require 'mime/types'
+require 'ostruct'
 
 require 'partigirb/core_ext'
 
 require 'partigirb/transport'
 require 'partigirb/client'
+Dir.glob('lib/partigirb/handlers/*.rb').each { |e| require e } 

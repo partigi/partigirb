@@ -35,7 +35,7 @@ class ClientTest < Test::Unit::TestCase
     @client.friendships.create!
     
     assert_equal(:post, @client.transport.method)
-    assert @client.transport.url.path.include?("/friendships/create.xml")
+    assert @client.transport.url.path.include?("/friendships/create.atom")
   end
   
   should "request to the Partigi API host through HTTP protocol" do
@@ -153,7 +153,23 @@ class ClientTest < Test::Unit::TestCase
     end
   end
   
-  # TODO: Test for responses
+  should "process XML response by XML handler" do
+    Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).once
+    Partigirb::Handlers::JSONHandler.any_instance.expects(:decode_response).never
+    @client.items.xml
+  end
+
+  should "process Atom response by Atom handler" do
+    Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).once
+    Partigirb::Handlers::JSONHandler.any_instance.expects(:decode_response).never
+    @client.items.atom
+  end
+
+  should "process JSON response by JSON handler" do
+    Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).never
+    Partigirb::Handlers::JSONHandler.any_instance.expects(:decode_response).once
+    @client.items.json
+  end  
   
   # Copied from Grackle
   should "clear the request path on clear" do
@@ -165,15 +181,15 @@ class ClientTest < Test::Unit::TestCase
   end
   
   should "use multipart encoding when using a file param" do
-    client = new_client(200,'[{"id":1,"text":"test 1"}]')
+    client = new_client(200,'')
     client.account.update_profile_image! :image=>File.new(__FILE__)    
     assert_match(/multipart\/form-data/,Net::HTTP.request['Content-Type'])
   end
   
   should "escape and encode time param" do
-    client = new_client(200,'[{"id":1,"text":"test 1"}]')
+    client = new_client(200,'')
     time = Time.now-60*60
     client.statuses.public_timeline? :since=>time  
-    assert_equal("/api/v#{Partigirb::CURRENT_API_VERSION}/statuses/public_timeline.xml?since=#{CGI::escape(time.httpdate)}", Net::HTTP.request.path)
+    assert_equal("/api/v#{Partigirb::CURRENT_API_VERSION}/statuses/public_timeline.atom?since=#{CGI::escape(time.httpdate)}", Net::HTTP.request.path)
   end
 end

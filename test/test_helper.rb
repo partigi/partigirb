@@ -2,6 +2,7 @@ require 'rubygems'
 require 'test/unit'
 require 'shoulda'
 require 'mocha'
+require 'builder'
 require 'ruby-debug'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
@@ -29,4 +30,12 @@ class Test::Unit::TestCase
   def post_data
     Net::HTTP.request.body.split('&')
   end
+  
+  def build_xml_string(&block)
+    s = nil
+    xml = Builder::XmlMarkup.new(:target => s)
+    block.call(xml)
+    s
+  end
+  
 end
