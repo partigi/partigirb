@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{partigirb}
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Alvaro Bautista", "Fernando Blat"]
@@ -21,12 +21,16 @@ Gem::Specification.new do |s|
      "lib/partigirb.rb",
      "lib/partigirb/client.rb",
      "lib/partigirb/core_ext.rb",
+     "lib/partigirb/handlers/atom_handler.rb",
      "lib/partigirb/handlers/json_handler.rb",
      "lib/partigirb/handlers/string_handler.rb",
      "lib/partigirb/handlers/xml_handler.rb",
      "lib/partigirb/transport.rb",
      "partigirb.gemspec",
+     "test/atom_handler_test.rb",
      "test/client_test.rb",
+     "test/fixtures/alvaro_friends.atom.xml",
+     "test/fixtures/pulp_fiction.atom.xml",
      "test/json_handler_test.rb",
      "test/mocks/net_http_mock.rb",
      "test/mocks/response_mock.rb",
@@ -42,7 +46,8 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.1}
   s.summary = %q{TODO}
   s.test_files = [
-    "test/client_test.rb",
+    "test/atom_handler_test.rb",
+     "test/client_test.rb",
      "test/json_handler_test.rb",
      "test/mocks/net_http_mock.rb",
      "test/mocks/response_mock.rb",
