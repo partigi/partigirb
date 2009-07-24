@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Partigi</title>
+  <id>http://localhost:3000/films/pulp-fiction</id>
+  <updated>2009-07-17T07:18:27Z</updated>
+  <link type="application/atom+xml" href="http://localhost:3000/api/v1/items/show.atom?id=pulp-fiction&amp;type=film" rel="self"/>
+  <link type="text/html" href="http://localhost:3000/films/pulp-fiction" rel="alternate"/>
+  <author>
+    <name>Partigi</name>
+  </author>
+  <entry xmlns:ptPerson="http://schemas.partigi.com/v1.0/ptPerson" xmlns:ptItem="http://schemas.partigi.com/v1.0/ptItem">
+    <category scheme="http://schemas.partigi.com/v1.0#kind" term="http://schemas.partigi.com/v1.0#item"/>
+    <id>http://localhost:3000/films/pulp-fiction</id>
+    <title>Pulp Fiction</title>
+    <updated>2009-07-17T07:18:27Z</updated>
+    <published>2009-03-31T18:46:15Z</published>
+    <link type="text/html" rel="alternate" href="http://localhost:3000/films/pulp-fiction"/>
+    <link type="application/atom+xml" rel="self" href="http://localhost:3000/api/v1/items/show.atom?id=pulp-fiction&amp;type=film"/>
+    <ptItem:id>50</ptItem:id>
+    <ptItem:type>film</ptItem:type>
+    <ptItem:release_year>1994</ptItem:release_year>
+    <ptItem:title lang="es">Pulp Fiction</ptItem:title>
+    <ptItem:country>USA</ptItem:country>
+    <ptItem:posters>
+      <ptItem:poster type="image/jpeg" lang="" size="thumb" href="http://s3.amazonaws.com/partigidev/films/posters/251/pulp-fiction_thumb.jpg"/>
+    </ptItem:posters>
+    <ptItem:genre lang="es" name="comedia"/>
+    <ptItem:credits>
+      <ptPerson:entry rel="director">
+        <ptPerson:id>733</ptPerson:id>
+        <ptPerson:name>Quentin Tarantino</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="writer">
+        <ptPerson:id>733</ptPerson:id>
+        <ptPerson:name>Quentin Tarantino</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>734</ptPerson:id>
+        <ptPerson:name>John Travolta</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>735</ptPerson:id>
+        <ptPerson:name>Samuel L. Jackson</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>736</ptPerson:id>
+        <ptPerson:name>Tim Roth</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>737</ptPerson:id>
+        <ptPerson:name>Amanda Plummer</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>738</ptPerson:id>
+        <ptPerson:name>Eric Stoltz</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>739</ptPerson:id>
+        <ptPerson:name>Bruce Willis</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>499</ptPerson:id>
+        <ptPerson:name>Ving Rhames</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>740</ptPerson:id>
+        <ptPerson:name>Phil LaMarr</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>741</ptPerson:id>
+        <ptPerson:name>Maria de Medeiros</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>742</ptPerson:id>
+        <ptPerson:name>Rosanna Arquette</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>743</ptPerson:id>
+        <ptPerson:name>Peter Greene</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>744</ptPerson:id>
+        <ptPerson:name>Uma Thurman</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>745</ptPerson:id>
+        <ptPerson:name>Duane Whitaker</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>746</ptPerson:id>
+        <ptPerson:name>Paul Calderon</ptPerson:name>
+      </ptPerson:entry>
+      <ptPerson:entry rel="cast_member">
+        <ptPerson:id>747</ptPerson:id>
+        <ptPerson:name>Frank Whaley</ptPerson:name>
+      </ptPerson:entry>
+    </ptItem:credits>
+  </entry>
+</feed>

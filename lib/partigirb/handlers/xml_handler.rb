@@ -1,10 +1,9 @@
 module Partigirb
   module Handlers
     class XMLHandler
-      
       def decode_response(body)
         return REXML::Document.new if body.blank?
-        xml = REXML::Document.new(body)
+        xml = REXML::Document.new(body.gsub(/>\s+</,'><'))
         load_recursive(xml.root)
       end
       
@@ -23,12 +22,15 @@ module Partigirb
         def build_struct(node)
           ts = PartigiStruct.new
           node.elements.each do |e|
-            if e.namespace.blank?
-              ts.send("#{e.name}=",load_recursive(e))  
-            else
+            property = ""
+            
+            if !e.namespace.blank?
               ns = e.namespaces.invert[e.namespace]
-              ts.send("#{ns}_#{e.name}=",load_recursive(e))
+              property << "#{ns}_" unless ns == 'xmlns'
             end
+            
+            property << e.name
+            ts.send("#{property}=", load_recursive(e))
           end
           ts
         end

@@ -6,15 +6,7 @@ module Partigirb
   
   #Raised by methods which call the API if a non-200 response status is received 
   class PartigiError < StandardError
-    attr_accessor :method, :request_uri, :status, :response_body, :response_object
-  
-    def initialize(method, request_uri, status, response_body, msg=nil)
-      self.method = method
-      self.request_uri = request_uri
-      self.status = status
-      self.response_body = response_body
-      super(msg||"#{self.method} #{self.request_uri} => #{self.status}: #{self.response_body}")
-    end
+    attr_accessor :response_object
   end
   
   class Client
@@ -66,10 +58,9 @@ module Partigirb
       self.handlers = {
         :json => Partigirb::Handlers::JSONHandler.new,
         :xml => Partigirb::Handlers::XMLHandler.new,
+        :atom => Partigirb::Handlers::AtomHandler.new,
         :unknown => Partigirb::Handlers::StringHandler.new
       }
-      self.handlers[:atom] = self.handlers[:xml]
-      
       self.handlers.merge!(options[:handlers]||{})
       
       # Authentication param should be a hash with keys:
@@ -134,25 +125,21 @@ module Partigirb
     end
     
     def process_response(format, res)
-      fmt_handler = handler(format)        
+      fmt_handler = handler(format)
+      
       begin
-        unless res.code == 200
-          handle_error_response(res, Partigi::Handlers::XMLHandler)
+        if res.code.to_i != 200
+          handle_error_response(res, Partigirb::Handlers::XMLHandler)
         else
           fmt_handler.decode_response(res.body)
         end
-      rescue PartigiError => e
-        raise e
-      rescue => e
-        raise PartigiError.new(res.method,res.request_uri,res.status,res.body,"Unable to decode response: #{e}")
       end
-      
     end
     
     # TODO: Test for errors
     def handle_error_response(res, handler)
-      err = PartigiError.new(res.method,res.request_uri,res.status,res.body)
-      err.response_object = handler.decode_response(err.response_body)
+      err = Partigirb::PartigiError.new
+      err.response_object = handler.decode_response(res.body)
       raise err        
     end
     

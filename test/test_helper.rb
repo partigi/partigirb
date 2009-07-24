@@ -9,7 +9,6 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'partigirb'
 
-# TODO: Mock requests in some better way?
 Dir.glob('test/mocks/*_mock.rb').each { |e| require e } 
 
 class Test::Unit::TestCase
@@ -32,10 +31,17 @@ class Test::Unit::TestCase
   end
   
   def build_xml_string(&block)
-    s = nil
+    s = String.new
     xml = Builder::XmlMarkup.new(:target => s)
-    block.call(xml)
+    yield(xml)
     s
   end
   
+  def load_fixture(name, format = :xml)
+    name += '.xml' if format.to_s == 'xml'
+    name += '.atom.xml' if format.to_s == 'atom'
+    name += '.json' if format.to_s == 'json'
+    
+    File.read(File.join(File.dirname(__FILE__), 'fixtures', name))
+  end
 end

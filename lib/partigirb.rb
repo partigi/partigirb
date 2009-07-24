@@ -15,6 +15,11 @@ require 'ostruct'
 
 require 'partigirb/core_ext'
 
+require 'partigirb/handlers/xml_handler'
+require 'partigirb/handlers/atom_handler'
+require 'partigirb/handlers/json_handler'
+require 'partigirb/handlers/string_handler'
+
 require 'partigirb/transport'
 require 'partigirb/client'
-Dir.glob('lib/partigirb/handlers/*.rb').each { |e| require e } 
+

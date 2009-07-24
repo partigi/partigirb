@@ -155,18 +155,21 @@ class ClientTest < Test::Unit::TestCase
   
   should "process XML response by XML handler" do
     Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).once
+    Partigirb::Handlers::AtomHandler.any_instance.expects(:decode_response).never
     Partigirb::Handlers::JSONHandler.any_instance.expects(:decode_response).never
     @client.items.xml
   end
 
   should "process Atom response by Atom handler" do
-    Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).once
+    Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).never
+    Partigirb::Handlers::AtomHandler.any_instance.expects(:decode_response).once
     Partigirb::Handlers::JSONHandler.any_instance.expects(:decode_response).never
     @client.items.atom
   end
 
   should "process JSON response by JSON handler" do
     Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).never
+    Partigirb::Handlers::AtomHandler.any_instance.expects(:decode_response).never
     Partigirb::Handlers::JSONHandler.any_instance.expects(:decode_response).once
     @client.items.json
   end  
