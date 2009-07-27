@@ -174,6 +174,17 @@ class ClientTest < Test::Unit::TestCase
     @client.items.json
   end  
   
+  should "raise a PartigiError with response error text as the message when http response codes are other than 200" do
+   client = new_client(400, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<error>Partigi::BadAPIRequestRequiredParams</error>\n")
+   
+   begin
+     client.items.show.xml :id => 'madeup'
+   rescue Exception => e
+     assert e.is_a?(Partigirb::PartigiError)
+     assert_equal 'Partigi::BadAPIRequestRequiredParams', e.message
+   end
+  end
+  
   # Copied from Grackle
   should "clear the request path on clear" do
     client = new_client(200,'[{"id":1,"text":"test 1"}]')

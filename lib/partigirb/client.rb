@@ -4,9 +4,8 @@ module Partigirb
     attr_accessor :id 
   end
   
-  #Raised by methods which call the API if a non-200 response status is received 
+  # Raised by methods which call the API if a non-200 response status is received 
   class PartigiError < StandardError
-    attr_accessor :response_object
   end
   
   class Client
@@ -129,7 +128,7 @@ module Partigirb
       
       begin
         if res.code.to_i != 200
-          handle_error_response(res, Partigirb::Handlers::XMLHandler)
+          handle_error_response(res, Partigirb::Handlers::XMLHandler.new)
         else
           fmt_handler.decode_response(res.body)
         end
@@ -138,9 +137,10 @@ module Partigirb
     
     # TODO: Test for errors
     def handle_error_response(res, handler)
-      err = Partigirb::PartigiError.new
-      err.response_object = handler.decode_response(res.body)
-      raise err        
+      # Response for errors is an XML document containing an error tag as a root,
+      # having a text node with error name. As XMLHandler starts building the Struct
+      # on root node the returned value from the handler will always be the error name text.
+      raise PartigiError.new(handler.decode_response(res.body))
     end
     
     def format_invocation?(name)
