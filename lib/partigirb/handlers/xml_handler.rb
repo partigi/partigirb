@@ -11,9 +11,9 @@ module Partigirb
         def load_recursive(node)
           if array_node?(node)
             node.elements.map {|e| load_recursive(e)}
-          elsif node.elements.size > 0
-            build_struct(node)
-          elsif node.elements.size == 0
+          elsif node.elements.size > 0 || node.attributes.size > 0
+            build_struct(node)          
+          else
             value = node.text
             fixnum?(value) ? value.to_i : value
           end
@@ -21,6 +21,17 @@ module Partigirb
       
         def build_struct(node)
           ts = PartigiStruct.new
+          
+          node.attributes.each do |a,v|
+            # In case the Struct object already responds to a method 
+            # with same name like type case
+            if ts.respond_to?(a) 
+              ts.send("_#{a}=",v)
+            else
+              ts.send("#{a}=", v) unless a =~ /^xmlns/
+            end
+          end
+          
           node.elements.each do |e|
             property = ""
             

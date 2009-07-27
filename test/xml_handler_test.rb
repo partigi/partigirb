@@ -62,4 +62,25 @@ class XMLHandlerTest < Test::Unit::TestCase
     assert_equal 123, res.nameSpace_id
     assert_equal 'Bob', res.nameSpace_name
   end
+  
+  should "extract attributes from nodes" do
+    xmls = build_xml_string do |xml|
+      xml.instruct!
+      xml.user do
+        xml.id 123
+        xml.name 'Bob'
+        xml.link({:rel => 'alternate', :href => 'http://www.pointing-to-something.com', :type => 'text/html'})
+      end
+    end
+    
+    res = @handler.decode_response(xmls)
+    assert res.is_a?(Partigirb::PartigiStruct)
+    assert_equal 123, res.id
+    assert_equal 'Bob', res.name
+    
+    assert res.link.is_a?(Partigirb::PartigiStruct)
+    assert_equal 'alternate', res.link.rel
+    assert_equal 'text/html', res.link._type
+    assert_equal 'http://www.pointing-to-something.com', res.link.href
+  end
 end
