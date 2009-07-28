@@ -32,6 +32,8 @@ module Partigirb
             end
           end
           
+          links = node.elements.delete_all('link')
+          
           node.elements.each do |e|
             property = ""
             
@@ -43,6 +45,11 @@ module Partigirb
             property << e.name
             ts.send("#{property}=", load_recursive(e))
           end
+          
+          unless links.empty?
+            ts.send("links=", links.map{|l| build_struct(l)})
+          end
+          
           ts
         end
         

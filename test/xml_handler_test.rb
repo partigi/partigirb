@@ -69,7 +69,7 @@ class XMLHandlerTest < Test::Unit::TestCase
       xml.user do
         xml.id 123
         xml.name 'Bob'
-        xml.link({:rel => 'alternate', :href => 'http://www.pointing-to-something.com', :type => 'text/html'})
+        xml.field({:attribute1 => 'value1', :attribute2 => 'value2', :attribute3 => 'value3'})
       end
     end
     
@@ -78,9 +78,27 @@ class XMLHandlerTest < Test::Unit::TestCase
     assert_equal 123, res.id
     assert_equal 'Bob', res.name
     
-    assert res.link.is_a?(Partigirb::PartigiStruct)
-    assert_equal 'alternate', res.link.rel
-    assert_equal 'text/html', res.link._type
-    assert_equal 'http://www.pointing-to-something.com', res.link.href
+    assert res.field.is_a?(Partigirb::PartigiStruct)
+    assert_equal 'value1', res.field.attribute1
+    assert_equal 'value2', res.field.attribute2
+    assert_equal 'value3', res.field.attribute3
+  end
+  
+  should "extract links to an array" do
+    xmls = build_xml_string do |xml|
+      xml.instruct!
+      xml.user do
+        xml.id 123
+        xml.link({:rel => 'alternate', :href => 'http://www.pointing-to-something.com', :type => 'text/html'})
+        xml.link({:rel => 'self', :href => 'http://www.pointing-to-self-something.com', :type => 'application/xml'})
+      end
+    end
+    
+    res = @handler.decode_response(xmls)
+    assert res.is_a?(Partigirb::PartigiStruct)
+    assert_not_nil res.links
+    assert res.links.is_a?(Array)
+    assert_equal 'alternate', res.links.first.rel
+    assert_equal 'self', res.links[1].rel
   end
 end
