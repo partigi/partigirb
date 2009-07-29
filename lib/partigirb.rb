@@ -5,6 +5,8 @@ end
 
 $:.unshift File.dirname(__FILE__)
 
+require 'rubygems'
+
 require 'open-uri'
 require 'net/http'
 require 'base64'
