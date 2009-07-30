@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{partigirb}
-  s.version = "0.2.3"
+  s.version = "0.2.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Alvaro Bautista", "Fernando Blat"]
-  s.date = %q{2009-07-27}
+  s.date = %q{2009-07-30}
   s.email = ["alvarobp@gmail.com", "ferblape@gmail.com"]
   s.extra_rdoc_files = [
     "LICENSE",
@@ -18,6 +18,8 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "examples/last_reviews_summary.rb",
+     "examples/who_ignores_me.rb",
      "lib/partigirb.rb",
      "lib/partigirb/client.rb",
      "lib/partigirb/core_ext.rb",
@@ -54,7 +56,9 @@ Gem::Specification.new do |s|
      "test/mocks/transport_mock.rb",
      "test/test_helper.rb",
      "test/transport_test.rb",
-     "test/xml_handler_test.rb"
+     "test/xml_handler_test.rb",
+     "examples/last_reviews_summary.rb",
+     "examples/who_ignores_me.rb"
   ]
 
   if s.respond_to? :specification_version then
