@@ -49,7 +49,7 @@ For POST requests just change <tt>?</tt> by <tt>!</tt>:
 === Parameter handling
 
 - All parameters are URL encoded as necessary.
-- If you use a File object as a parameter it will be POSTed to Twitter in a multipart request.
+- If you use a File object as a parameter it will be POSTed to Partigi in a multipart request.
 - If you use a Time object as a parameter, .httpdate will be called on it and that value will be used
 
 === Return values
@@ -62,7 +62,7 @@ When using Atom format Partigi returns some XML elements using namespaces. In th
 
 === Error handling
 
-In case Partigi returns an error response, this is turned into a PartigiError object having the error string returned in the XML response as message attribute.
+In case Partigi returns an error response, this is turned into a PartigiError object with message attribute set to the error string returned in the XML response.
 
 == Requirements
 
