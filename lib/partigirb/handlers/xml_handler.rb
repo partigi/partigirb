@@ -11,7 +11,7 @@ module Partigirb
         def load_recursive(node)
           if array_node?(node)
             node.elements.map {|e| load_recursive(e)}
-          elsif node.elements.size > 0 || node.attributes.size > 0
+          elsif (node.elements.size > 0 || node.attributes.size > 0) && !ignore_attributes?(node)
             build_struct(node)          
           else
             value = node.text
@@ -37,8 +37,7 @@ module Partigirb
           node.elements.each do |e|
             property = ""
             
-            if !e.namespace.blank?
-              ns = e.namespaces.invert[e.namespace]
+            if ns = node_namespace(e)
               property << "#{ns}_" unless ns == 'xmlns'
             end
             
@@ -64,6 +63,20 @@ module Partigirb
         def fixnum?(value)
           value =~ /^\d+$/
         end
+        
+        def node_namespace(node)
+          node.namespace.blank? ? nil : node.namespaces.invert[node.namespace]
+        end
+        
+        def ignore_attributes?(node)
+          element_name = node.name
+          ns = node_namespace(node)
+          element_name.insert(0, "#{ns}:") if ns
+          
+          IGNORE_ATTRIBUTES_FOR.include?(element_name)
+        end
+        
+        IGNORE_ATTRIBUTES_FOR = ['ptItem:synopsis', 'ptItem:title']
     end
   end
 end

@@ -101,4 +101,20 @@ class XMLHandlerTest < Test::Unit::TestCase
     assert_equal 'alternate', res.links.first.rel
     assert_equal 'self', res.links[1].rel
   end
+  
+  should "extract values and ignore attributes for elements in IGNORE_ATTRIBUTES_FOR" do
+    xmls = build_xml_string do |xml|
+      xml.instruct!
+      xml.entry({"xmlns:ptItem" => 'http://schemas.overtheworld.com/v200/ptItem'}) do
+        xml.id 123
+        xml.ptItem :synopsis, {:lang => 'en', :type => 'text'}, 'In my opinion...'
+        xml.ptItem :title, {:lang => 'en'}, 'Wadus Movie'
+      end
+    end
+    
+    res = @handler.decode_response(xmls)
+    assert res.is_a?(Partigirb::PartigiStruct)
+    assert_equal 'In my opinion...', res.ptItem_synopsis
+    assert_equal 'Wadus Movie', res.ptItem_title
+  end
 end
