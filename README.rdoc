@@ -2,6 +2,8 @@
 
 Ruby wrapper for the Partigi API, adapted from Grackle by Hayes Davis (http://github.com/hayesdavis/grackle/tree/master).
 
+To read the Partigi API documentation, visit the official wiki at: http://partigi.pbworks.com/
+
 == Usage
 
 === Creating a client
