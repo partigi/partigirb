@@ -60,7 +60,6 @@ Gem::Specification.new do |s|
      "test/transport_test.rb",
      "test/xml_handler_test.rb",
      "examples/last_reviews_summary.rb",
-     "examples/lend_me.rb",
      "examples/who_ignores_me.rb"
   ]
 
