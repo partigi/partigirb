@@ -2,6 +2,14 @@
 
 Ruby wrapper for the Partigi API, adapted from Grackle by Hayes Davis (http://github.com/hayesdavis/grackle/tree/master).
 
+== What is Partigi?
+
+[Partigi](http://www.partigi.com) is a service that helps you choose your next cultural items, share short reviews and keep track of what you have consumed and own.
+
+The Partigi API is an almost-REST based Atom API where we offer you almost all data and functionality that you have in the website.
+
+There is also a [complete documentation of the API](http://partigi.pbworks.com/).
+
 == Usage
 
 === Creating a client
