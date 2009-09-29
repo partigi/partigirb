@@ -68,6 +68,19 @@ If the response contains several entries the client returns an Array of OpenStru
 
 When using Atom format Partigi returns some XML elements using namespaces. In those cases the elements are mapped to attributes by convention, for example: namespaceName:attribute becomes <tt>namespaceName</tt>_<tt>attribute</tt>
 
+==== Special cases
+
+There are two special cases to be aware of in regard to PartigiStruct:
+
+- Every attribute which name is equal to any of the Ruby Object methods (e.g type) will be mapped to a method on the struct starting with an underscore (e.g _type).
+
+- XML elements that appear repeated with different type values will turn into a unique struct with one method per type. For instance:
+
+    <content type="text">Some text</content>
+    <content type="html"><p>Some html</p></content>
+  
+  Will be accessed by <tt>result.content.text</tt> and <tt>result.content.html</tt>, both return ruby strings.
+
 === Error handling
 
 In case Partigi returns an error response, this is turned into a PartigiError object with message attribute set to the error string returned in the XML response.

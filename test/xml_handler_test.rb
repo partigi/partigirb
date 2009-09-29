@@ -117,4 +117,64 @@ class XMLHandlerTest < Test::Unit::TestCase
     assert_equal 'In my opinion...', res.ptItem_synopsis
     assert_equal 'Wadus Movie', res.ptItem_title
   end
+  
+  should "create an struct with a method for each type for nodes defined as multiple type nodes" do
+    expected_content = <<-CONTENT
+      <h1>Testing</h1>
+      <p>This is raw html content</p>
+    CONTENT
+    
+    xmls = build_xml_string do |xml|
+      xml.instruct!
+      xml.entry({"xmlns:ptItem" => 'http://schemas.overtheworld.com/v200/ptItem'}) do
+        xml.id 123
+        xml.content("This is text content", :type => 'text')
+        xml.content(:type => 'html') do
+          xml << <<-CONTENT
+          <![CDATA[
+            #{expected_content}
+          ]]>
+          CONTENT
+        end
+      end
+    end
+    
+    res = @handler.decode_response(xmls)
+    assert res.respond_to?('content')
+    assert res.content.respond_to?('text')
+    assert res.content.respond_to?('html')
+    
+    assert_equal "This is text content", res.content.text
+    assert_equal "<h1>Testing</h1><p>This is raw html content</p>", res.content.html.strip
+  end
+  
+  should "not parse elements with type property set to xhtml even if they are not in IGNORE_ATTRIBUTES_FOR" do
+    expected_content = <<-XHTML
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <a href="http://www.partigi.com/films/watchmen">
+          <img alt="Watchmen's poster" src="http://s3.amazonaws.com/partigiproduction/films/posters/179/watchmen_thumb.jpg"/>
+        </a>
+      </div>
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <blockquote>Great movie. I recommend to read the comic before watching the movie.</blockquote>
+      </div>
+    XHTML
+
+    xmls = build_xml_string do |xml|
+      xml.instruct!
+      xml.entry({"xmlns:ptItem" => 'http://schemas.overtheworld.com/v200/ptItem'}) do
+        xml.id 123
+        xml.plaindata(:type => 'xhtml') do
+          xml << <<-CONTENT
+          <![CDATA[
+            #{expected_content}
+          ]]>
+          CONTENT
+        end
+      end
+    end
+
+    res = @handler.decode_response(xmls)
+    assert_equal expected_content.strip.gsub(/\n\s+/,''), res.plaindata.strip
+  end
 end

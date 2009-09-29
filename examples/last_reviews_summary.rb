@@ -16,7 +16,7 @@ def show_reviews(client, reviews, title)
   reviews.each do |review|
       film = client.items.show? :id => review.ptItem_id, :type => 'film'
       puts "- #{film.title}"
-      puts "  Comment: #{review.content}"
+      puts "  Comment: #{review.content.text}"
       puts
   end
   puts
