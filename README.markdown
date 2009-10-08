@@ -35,6 +35,17 @@ A request to Partigi servers is done by translating Partigi URL paths into a set
 
 A request is not performed until either you add the above signs to your last method call or you use a format method call.
 
+**Note:** Any method call that is not part of a valid API request path will be chained to the  request that Partigirb sends to the server, so that when the client finds a format call (method call ending with ? or !) a wrong request will be sent and a PartigiError will be raised. For example:
+
+      client.wrong.items.index?
+      
+or
+      
+      client.wrong
+      client.items.index?
+
+In the second case we do the wrong call and the right one in separated sentences, however the wrong call is chained anyway (in that case the client method `clear` may be used to flush the chain).
+
 ### Formats
 
 The response format is specified by a method call with the format name (atom, json or xml). Notice that the only format fully implemented on Partigi API at the moment is atom, which is the default used by the wrapper.
@@ -47,7 +58,7 @@ The simplest way of executing a GET request is to use the `?` notation, using th
   
 Also you can force the format:
   
-    client.users.show.json? :id => 'johnwayne # http://www.partigi.com/api/v1/users/show.json?id=johnwayne
+    client.users.show.json? :id => 'johnwayne' # http://www.partigi.com/api/v1/users/show.json?id=johnwayne
 
 For POST requests just change `?` by `!`:
   
