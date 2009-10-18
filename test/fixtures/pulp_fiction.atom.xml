@@ -18,7 +18,7 @@
     <link type="application/atom+xml" rel="self" href="http://localhost:3000/api/v1/items/show.atom?id=pulp-fiction&amp;type=film"/>
     <ptItem:id>50</ptItem:id>
     <ptItem:type>film</ptItem:type>
-    <ptItem:release_year>1994</ptItem:release_year>
+    <ptItem:year>1994</ptItem:year>
     <ptItem:title lang="es">Pulp Fiction</ptItem:title>
     <ptItem:country>USA</ptItem:country>
     <ptItem:posters>
