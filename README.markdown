@@ -10,6 +10,10 @@ The Partigi API is an almost-REST based Atom API where we offer you almost all d
 
 There is also a [complete documentation of the API](http://partigi.pbworks.com/).
 
+## Install
+
+    gem install partigirb -s http://gemcutter.org
+
 ## Usage
 
 ### Creating a client

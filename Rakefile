@@ -5,13 +5,13 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "partigirb"
-    gem.summary = %Q{TODO}
+    gem.summary = %q{A Ruby wrapper for the Partigi API}
     gem.email = ["alvarobp@gmail.com", "ferblape@gmail.com"]
     gem.homepage = "http://github.com/partigi/partigirb"
     gem.authors = ["Alvaro Bautista", "Fernando Blat"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
-
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
