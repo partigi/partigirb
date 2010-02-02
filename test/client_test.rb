@@ -88,71 +88,6 @@ class ClientTest < Test::Unit::TestCase
     assert_equal 'header', Net::HTTP.request['Fake']
   end
   
-  should "add authentication headers when login and secret are provided" do
-    @client = new_client(200, '', :auth => {:login => 'auser', :api_secret => 'his_api_secret'})
-    
-    @client.friendships.update! :id => 321
-    
-    assert_not_nil Net::HTTP.request['Authorization']
-    assert_equal "WSSE realm=\"#{Partigirb::Client::PARTIGI_API_HOST}\", profile=\"UsernameToken\"", Net::HTTP.request['Authorization']
-    
-    assert_not_nil Net::HTTP.request['X-WSSE']
-    assert_match /UsernameToken Username="auser", PasswordDigest="[^"]+", Nonce="[^"]+", Created="[^"]+"/, Net::HTTP.request['X-WSSE']
-  end
-  
-  should "not add authentication headers if no auth params are provided" do
-    @client.friendships.update! :id => 321
-    
-    assert_nil Net::HTTP.request['Authorization']
-    assert_nil Net::HTTP.request['X-WSSE']
-  end
-  
-  should "use given nonce for authentication" do
-    @client = new_client(200, '', :auth => {:login => 'auser', :api_secret => 'his_api_secret', :nonce => '123456789101112'})
-    @client.friendships.update! :id => 321
-    
-    assert_equal "WSSE realm=\"#{Partigirb::Client::PARTIGI_API_HOST}\", profile=\"UsernameToken\"", Net::HTTP.request['Authorization']
-    assert_match /UsernameToken Username="auser", PasswordDigest="[^"]+", Nonce="123456789101112", Created="[^"]+"/, Net::HTTP.request['X-WSSE']
-  end
-  
-  should "use given timestamp string for authentication" do
-    @client = new_client(200, '', :auth => {:login => 'auser', :api_secret => 'his_api_secret', :timestamp => '2009-07-15T14:43:07Z'})
-    @client.friendships.update! :id => 321
-    
-    assert_equal "WSSE realm=\"#{Partigirb::Client::PARTIGI_API_HOST}\", profile=\"UsernameToken\"", Net::HTTP.request['Authorization']
-    assert_match /UsernameToken Username="auser", PasswordDigest="[^"]+", Nonce="[^"]+", Created="2009-07-15T14:43:07Z"/, Net::HTTP.request['X-WSSE']
-  end
-  
-  should "use given Time object as timestamp for authentication" do
-    timestamp = Time.now
-    @client = new_client(200, '', :auth => {:login => 'auser', :api_secret => 'his_api_secret', :timestamp => timestamp})
-    @client.friendships.update! :id => 321
-    
-    assert_equal "WSSE realm=\"#{Partigirb::Client::PARTIGI_API_HOST}\", profile=\"UsernameToken\"", Net::HTTP.request['Authorization']
-    assert_match /UsernameToken Username="auser", PasswordDigest="[^"]+", Nonce="[^"]+", Created="#{timestamp.strftime(Partigirb::Client::TIMESTAMP_FORMAT)}"/, Net::HTTP.request['X-WSSE']
-  end
-  
-  should "use the PasswordDigest from given parameters" do
-    @client = new_client(200, '', :auth => {:login => 'auser', :api_secret => 'his_api_secret', :nonce => '123456789101112', :timestamp => '2009-07-15T14:43:07Z'})
-    @client.friendships.update! :id => 321
-    
-    pdigest = Base64.encode64(Digest::SHA1.hexdigest("1234567891011122009-07-15T14:43:07Zauserhis_api_secret")).chomp
-    
-    assert_equal "WSSE realm=\"#{Partigirb::Client::PARTIGI_API_HOST}\", profile=\"UsernameToken\"", Net::HTTP.request['Authorization']
-    assert_match /UsernameToken Username="auser", PasswordDigest="#{pdigest}", Nonce="123456789101112", Created="2009-07-15T14:43:07Z"/, Net::HTTP.request['X-WSSE']
-  end
-  
-  context "generate_nonce method" do
-    should "generate random strings" do
-      @client.instance_eval do
-        nonces = []
-        1.upto(25) do
-          assert !nonces.include?(generate_nonce)
-        end
-      end
-    end
-  end
-  
   should "process XML response by XML handler" do
     Partigirb::Handlers::XMLHandler.any_instance.expects(:decode_response).once
     Partigirb::Handlers::AtomHandler.any_instance.expects(:decode_response).never
@@ -175,14 +110,88 @@ class ClientTest < Test::Unit::TestCase
   end  
   
   should "raise a PartigiError with response error text as the message when http response codes are other than 200" do
-   client = new_client(400, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<error>Partigi::BadAPIRequestRequiredParams</error>\n")
-   
-   begin
-     client.items.show.xml :id => 'madeup'
-   rescue Exception => e
-     assert e.is_a?(Partigirb::PartigiError)
-     assert_equal 'Partigi::BadAPIRequestRequiredParams', e.message
-   end
+    client = new_client(400, "Partigi::BadAPIRequestRequiredParams")
+
+    begin
+      client.items.show.xml :id => 'madeup'
+    rescue Exception => e
+      assert e.is_a?(Partigirb::PartigiError)
+      assert_equal 'Partigi::BadAPIRequestRequiredParams', e.message
+    end
+  end
+  
+  should "initialize with OAuth consumer key and secret" do
+    client = Partigirb::Client.new('my_consumer_key', 'my_consumer_secret')
+    
+    assert client.consumer.is_a?(OAuth::Consumer)
+    assert_equal 'my_consumer_key', client.consumer.key
+    assert_equal 'my_consumer_secret', client.consumer.secret
+  end
+  
+  should "get a request token from the consumer" do
+    consumer = mock('oauth consumer')
+    request_token = mock('request token')
+    OAuth::Consumer.expects(:new).with('my_consumer_key', 'my_consumer_secret', {:site => 'http://www.partigi.com'}).returns(consumer)
+    client = Partigirb::Client.new('my_consumer_key', 'my_consumer_secret')
+    
+    consumer.expects(:get_request_token).returns(request_token)
+    
+    assert_equal request_token, client.request_token
+  end
+  
+  should "clear request token and set the callback url" do
+    consumer = mock('oauth consumer')
+    request_token = mock('request token')      
+    OAuth::Consumer.expects(:new).with('my_consumer_key', 'my_consumer_secret', {:site => 'http://www.partigi.com'}).returns(consumer)
+    client = Partigirb::Client.new('my_consumer_key', 'my_consumer_secret')
+    
+    client.expects(:clear_request_token).once
+    consumer.expects(:get_request_token).with({:oauth_callback => 'http://testing.com/oauth_callback'}).returns(request_token)
+    
+    client.set_callback_url('http://testing.com/oauth_callback')
+  end
+  
+  should "create and set access token from request token, request secret and verifier" do
+    client = Partigirb::Client.new('my_consumer_key', 'my_consumer_secret')
+    consumer = OAuth::Consumer.new('my_consumer_key', 'my_consumer_secret', {:site => 'http://www.partigi.com'})
+    client.stubs(:consumer).returns(consumer)
+    
+    access_token  = mock('access token')
+    request_token = mock('request token')
+    request_token.expects(:get_access_token).with(:oauth_verifier => 'verify_me').returns(access_token)
+      
+    OAuth::RequestToken.expects(:new).with(consumer, 'the_request_token', 'the_request_secret').returns(request_token)
+    
+    client.authorize_from_request('the_request_token', 'the_request_secret', 'verify_me')
+    assert_equal access_token, client.access_token
+  end
+  
+  should "create and set access token from access token and secret" do
+    client = Partigirb::Client.new('my_consumer_key', 'my_consumer_secret')
+    consumer = OAuth::Consumer.new('my_consumer_key', 'my_consumer_secret', {:site => 'http://www.partigi.com'})
+    client.stubs(:consumer).returns(consumer)
+    
+    client.authorize_from_access('the_access_token', 'the_access_secret')
+    assert client.access_token.is_a?(OAuth::AccessToken)
+    assert_equal 'the_access_token', client.access_token.token
+    assert_equal 'the_access_secret', client.access_token.secret
+  end
+  
+  should "pass access token on Transport requests when available" do
+    access_token  = mock('access token')
+    OAuth::AccessToken.expects(:new).with(anything, 'the_access_token', 'the_access_secret').returns(access_token)
+    @client.transport.expects(:request).with(anything, anything, has_entries({:access_token => access_token})).returns(MockResponse.new(200,''))
+    @client.authorize_from_access('the_access_token', 'the_access_secret')
+    @client.user.show.xml
+  end
+  
+  context "verify_credentials method" do
+    should "make a request to /account/verify_credentials" do
+      @client = new_client(200, '')
+      @client.verify_credentials
+
+      assert_equal '/api/v1/account/verify_credentials.atom', @client.transport.url.path
+    end
   end
   
   # Copied from Grackle

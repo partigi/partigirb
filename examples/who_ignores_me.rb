@@ -1,5 +1,8 @@
 require File.dirname(__FILE__) + '/../lib/partigirb'
 
+CONSUMER_KEY = "your_consumer_key"
+CONSUMER_SECRET = "your_consumer_secret"
+
 if ARGV.empty?
   puts "\nUsage: #{__FILE__} user_id_or_login\n\n"
   exit
@@ -7,7 +10,7 @@ end
 
 user_id = ARGV.first
 
-client = Partigirb::Client.new
+client = Partigirb::Client.new(CONSUMER_KEY, CONSUMER_SECRET)
 
 traitors = []
 

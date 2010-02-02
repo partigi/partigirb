@@ -13,8 +13,8 @@ Dir.glob('test/mocks/*_mock.rb').each { |e| require e }
 
 class Test::Unit::TestCase
   def new_client(status=200, response_body='', client_opts={})
-    client = Partigirb::Client.new(client_opts)
-    client.transport = MockTransport.new(status,response_body)
+    client = Partigirb::Client.new('prb_consumer_key', 'prb_consumer_secret', client_opts)
+    client.transport = MockTransport.new(client.consumer,status,response_body)
     client
   end
   

@@ -13,8 +13,12 @@ module Partigirb
   
   class Transport
     
-    attr_accessor :debug
-  
+    attr_accessor :debug, :consumer
+    
+    def initialize(consumer)
+      @consumer = consumer
+    end
+    
     CRLF = "\r\n"
     
     def req_class(method)
@@ -44,23 +48,25 @@ module Partigirb
     end
     
     def execute_request(method,url,options={})
-      conn = Net::HTTP.new(url.host, url.port)
-      #conn.use_ssl = (url.scheme == 'https')
-      conn.start do |http|
-        req = req_class(method).new(url.request_uri)
-        
-        add_headers(req,options[:headers])
-        if file_param?(options[:params])
-          add_multipart_data(req,options[:params])
-        else
-          add_form_data(req,options[:params])
-        end
-        
-        dump_request(req) if debug
-        res = http.request(req)
-        dump_response(res) if debug
-        res
+      http = Net::HTTP.new(url.host, url.port)
+      
+      req = req_class(method).new(url.request_uri)
+      add_headers(req,options[:headers])
+      if file_param?(options[:params])
+        add_multipart_data(req,options[:params])
+      else
+        add_form_data(req,options[:params])
       end
+      
+      # Sign the request with OAuth
+      # when there is no options[:access_token] the request is signed without oauth_token
+      # so it will be a Partigi OAuth Readonly request
+      req.oauth!(http, @consumer, options[:access_token])
+      
+      dump_request(req) if debug
+      res = http.request(req)
+      dump_response(res) if debug
+      res
     end
 
     def query_string(params)

@@ -14,6 +14,7 @@ require 'digest'
 require 'rexml/document'
 require 'mime/types'
 require 'ostruct'
+require 'oauth'
 
 require 'partigirb/core_ext'
 
@@ -24,4 +25,3 @@ require 'partigirb/handlers/string_handler'
 
 require 'partigirb/transport'
 require 'partigirb/client'
-

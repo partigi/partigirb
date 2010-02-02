@@ -2,8 +2,9 @@
 class MockTransport < Partigirb::Transport
   attr_accessor :status, :body, :method, :url, :options
 
-  def initialize(status,body,headers={})
+  def initialize(consumer,status,body,headers={})
     Net::HTTP.response = MockResponse.new(status,body,headers)
+    super(consumer)
   end
 
   def request(method, string_url, options)

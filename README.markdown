@@ -12,23 +12,35 @@ There is also a [complete documentation of the API](http://partigi.pbworks.com/)
 
 ## Install
 
+    gem install oauth
     gem install partigirb -s http://gemcutter.org
 
 ## Usage
 
 ### Creating a client
 
-#### Without Authentication
+Since Partigi started to require OAuth in all its API requests they support two authorization modes: the common OAuth specification ([http://oauth.net/core/1.0a/](http://oauth.net/core/1.0a/)) for read-write access and OAuth with a slightly modification for read-only access, which just consists of skiping the oauth_token when signing the requests.
 
-    client = Partigirb::Client.new
+Regardless of the access method used you will need to register your application and get a `consumer_key` and a `consumer_secret`, used in both access methods. ([http://www.partigi.com/applications](http://www.partigi.com/applications))
 
-#### With Authentication
+#### Read-only access
 
-    client = Partigirb::Client.new(:auth => {:login => 'SOMEUSERLOGIN', :api_secret => 'SECRETGENERATEDFORTHEUSER'})
-  
-#### With specific API version
-  
-    client = Partigirb::Client.new(:api_version => 2)
+    client = Partigirb::Client.new('consumer_key', 'consumer_secret')
+
+#### Read-write access
+
+    client = Partigirb::Client.new('consumer_key', 'consumer_secret')
+    client.set_callback_url('http://myapplication.test/partigi')
+    request_token = client.request_token
+    
+    # At this point we must redirect the user to Partigi so he can authorize our application to access
+    # his profile, we can get the authorization url with request_token.authorize_url
+    
+    # Once we are back Partigi will give us the parameter oauth_verifier, which we will use
+    # to get the access token
+    client.authorize_from_request(request_token.token, request_token.secret, oauth_verifier)
+    
+    # Now our client is fully authorized to call write methods for the user
   
 ### Request methods
 
@@ -99,6 +111,12 @@ There are two special cases to be aware of in regard to PartigiStruct:
 ### Error handling
 
 In case Partigi returns an error response, this is turned into a PartigiError object which message attribute is set to the error string returned in the XML response.
+
+### Verifying our credentials
+
+A way to check if our client is correctly authorized for write access or to just get the current user's information is by using the verify_credentials method, which will return either the PartigiStruct object with user's information or a PartigiError object in case of authorization failure.
+
+    client.verify_credentials
 
 ## Requirements
 

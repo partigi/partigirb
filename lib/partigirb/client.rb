@@ -46,28 +46,22 @@ module Partigirb
     PARTIGI_API_HOST = "www.partigi.com"
     TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
     
-    attr_accessor :default_format, :headers, :api_version, :transport, :request, :api_host, :auth, :handlers
+    attr_accessor :consumer_key, :consumer_secret, :default_format, :headers, :api_version, :transport, :request, :api_host, :auth, :handlers, :access_token
     
-    def initialize(options={})
-      self.transport = Transport.new
-      self.api_host = PARTIGI_API_HOST.clone
-      self.api_version = options[:api_version] || Partigirb::CURRENT_API_VERSION
-      self.headers = {"User-Agent"=>"Partigirb/#{Partigirb::VERSION}"}.merge!(options[:headers]||{})
-      self.default_format = options[:default_format] || :atom
-      self.handlers = {
+    def initialize(consumer_key, consumer_secret, options={})
+      @consumer = ::OAuth::Consumer.new(consumer_key, consumer_secret, {:site => "http://#{PARTIGI_API_HOST}"})
+      @transport = Transport.new(@consumer)
+      @api_host = PARTIGI_API_HOST.clone
+      @api_version = options[:api_version] || Partigirb::CURRENT_API_VERSION
+      @headers = {"User-Agent"=>"Partigirb/#{Partigirb::VERSION}"}.merge!(options[:headers]||{})
+      @default_format = options[:default_format] || :atom
+      @handlers = {
         :json => Partigirb::Handlers::JSONHandler.new,
         :xml => Partigirb::Handlers::XMLHandler.new,
         :atom => Partigirb::Handlers::AtomHandler.new,
         :unknown => Partigirb::Handlers::StringHandler.new
       }
-      self.handlers.merge!(options[:handlers]||{})
-      
-      # Authentication param should be a hash with keys:
-      # login (required)
-      # api_secret (required)
-      # nonce (optional, would be automatically generated if missing)
-      # timestamp (optional, current timestamp will be automatically used if missing)
-      self.auth = options[:auth]
+      @handlers.merge!(options[:handlers]) if options[:handlers]
     end
     
     def method_missing(name,*args)
@@ -101,6 +95,43 @@ module Partigirb
       @request ||= Request.new(self,api_version)
     end
     
+    # OAuth related methods
+    
+    # Note: If using oauth with a web app, be sure to provide :oauth_callback.
+    def request_token(options={})
+      @request_token ||= consumer.get_request_token(options)
+    end
+    
+    def set_callback_url(url)
+      clear_request_token
+      request_token(:oauth_callback => url)
+    end
+    
+    # For web apps use params[:oauth_verifier], for desktop apps,
+    # use the verifier is the pin that twitter gives users.
+    def authorize_from_request(request_token, request_secret, verifier_or_pin)
+      request_token = OAuth::RequestToken.new(consumer, request_token, request_secret)
+      @access_token = request_token.get_access_token(:oauth_verifier => verifier_or_pin)
+    end
+    
+    def consumer
+      @consumer
+    end
+    
+    def access_token
+      @access_token
+    end
+    
+    def authorize_from_access(token, secret)
+      @access_token = OAuth::AccessToken.new(consumer, token, secret)
+    end
+    
+    # Shortcut methods
+    
+    def verify_credentials
+      account.verify_credentials?
+    end
+    
     protected
     
     def call_with_format(format,params={})
@@ -113,11 +144,9 @@ module Partigirb
     
     def send_request(params)
       begin
-        set_authentication_headers
-        
-        transport.request(
-          request.method, request.url, :headers=>headers, :params=>params
-        )
+        options = {:headers=>headers, :params=>params}
+        options.merge!(:access_token => @access_token) unless @access_token.nil?
+        transport.request(request.method, request.url, options)
       rescue => e
         puts e
       end        
@@ -128,19 +157,15 @@ module Partigirb
       
       begin
         if res.code.to_i != 200
-          handle_error_response(res, Partigirb::Handlers::XMLHandler.new)
+          handle_error_response(res)
         else
           fmt_handler.decode_response(res.body)
         end
       end
     end
     
-    # TODO: Test for errors
-    def handle_error_response(res, handler)
-      # Response for errors is an XML document containing an error tag as a root,
-      # having a text node with error name. As XMLHandler starts building the Struct
-      # on root node the returned value from the handler will always be the error name text.
-      raise PartigiError.new(handler.decode_response(res.body))
+    def handle_error_response(res)
+      raise PartigiError.new(res.body)
     end
     
     def format_invocation?(name)
@@ -151,40 +176,8 @@ module Partigirb
       handlers[format] || handlers[:unknown]
     end
     
-    # Adds the proper WSSE headers if there are the right authentication parameters
-    def set_authentication_headers
-      unless self.auth.nil? || self.auth === Hash || self.auth.empty?
-        auths = self.auth.stringify_keys
-      
-        if auths.has_key?('login') &&  auths.has_key?('api_secret')
-          if !auths['timestamp'].nil?
-            timestamp = case auths['timestamp']
-            when Time
-              auths['timestamp'].strftime(TIMESTAMP_FORMAT)
-            when String
-              auths['timestamp']
-            end
-          else
-            timestamp = Time.now.strftime(TIMESTAMP_FORMAT) if timestamp.nil?
-          end
-        
-          nonce = auths['nonce'] || generate_nonce
-          password_digest = generate_password_digest(nonce, timestamp, auths['login'], auths['api_secret'])
-          headers.merge!({
-            'Authorization' => "WSSE realm=\"#{PARTIGI_API_HOST}\", profile=\"UsernameToken\"",
-            'X-WSSE' => "UsernameToken Username=\"#{auths['login']}\", PasswordDigest=\"#{password_digest}\", Nonce=\"#{nonce}\", Created=\"#{timestamp}\""
-          })
-        end
-      end
-    end
-    
-    def generate_nonce
-      o =  [('a'..'z'),('A'..'Z')].map{|i| i.to_a}.flatten
-      Digest::MD5.hexdigest((0..10).map{o[rand(o.length)]}.join)
-    end
-    
-    def generate_password_digest(nonce, timestamp, login, secret)
-      Base64.encode64(Digest::SHA1.hexdigest("#{nonce}#{timestamp}#{login}#{secret}")).chomp
+    def clear_request_token
+      @request_token = nil
     end
   end
 end
